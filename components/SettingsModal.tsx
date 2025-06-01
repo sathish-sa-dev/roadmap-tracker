@@ -48,7 +48,7 @@ const SettingsModal = ({
         setInitialDirectoryHandleOnOpen(null);
       }
     }
-  }, [isOpen, currentSettings, setGlobalError, directoryHandle]);
+  }, [isOpen, currentSettings, directoryHandle]);
 
   const handlePickDirectory = async () => {
     setIsLoading(true);

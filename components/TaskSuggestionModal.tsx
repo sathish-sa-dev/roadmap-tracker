@@ -42,9 +42,9 @@ const TaskSuggestionModal = ({
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-      setError(`Failed to load suggestion: \${errorMessage}`);
+      setError(`Failed to load suggestion: ${errorMessage}`);
       if (errorMessage.toLowerCase().includes("api key")) {
-        setGlobalError(`Gemini API Error: \${errorMessage}. Please ensure your API key is correctly configured.`);
+        setGlobalError(`Gemini API Error: ${errorMessage}. Please ensure your API key is correctly configured.`);
       }
     } finally {
       setIsLoading(false);
@@ -60,7 +60,7 @@ const TaskSuggestionModal = ({
       setError(null);
       setIsLoading(false); // Ensure loading is also reset
     }
-  }, [isOpen, selectedGroup, loadPrioritizedSuggestion]);
+  }, [isOpen, selectedGroup]); // Removed loadPrioritizedSuggestion from dependencies
   
   const renderContent = (): JSX.Element | null => {
     if (isLoading) {
@@ -100,7 +100,7 @@ const TaskSuggestionModal = ({
   // Thus, TaskSuggestionModal effectively returns JSX.Element (when isOpen is true and Modal renders) 
   // or null (when isOpen is false and Modal returns null).
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`AI Next Task Suggestion for \${selectedGroup?.label || 'Time Block'}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={`AI Next Task Suggestion for ${selectedGroup?.label || 'Time Block'}`}>
       <div className="space-y-4">
         {renderContent()}
         <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t mt-4 gap-3">

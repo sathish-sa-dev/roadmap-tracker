@@ -27,11 +27,11 @@ const App = (): JSX.Element => {
     pomodoroBreakMinutes: DEFAULT_POMODORO_BREAK_MINUTES,
   });
 
-  const defaultAllRoadmapsData: AllRoadmapsData = {
+  const defaultAllRoadmapsData: AllRoadmapsData = useMemo(() => ({
     roadmaps: [],
     pomodoroSessions: [],
     activePomodoroTaskDetails: null,
-  };
+  }), []);
 
   const [allRoadmapsData, setAllRoadmapsData] = useState<AllRoadmapsData>(defaultAllRoadmapsData);
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
@@ -308,6 +308,7 @@ const App = (): JSX.Element => {
     };
     setAllRoadmapsData(prev => ({...prev, roadmaps: [...prev.roadmaps, newRoadmap]}));
     setIsCreateRoadmapModalOpen(false); 
+    setActiveRoadmapId(newRoadmap.id); // Automatically select the new roadmap
     setGlobalError(null);
   }, []);
 

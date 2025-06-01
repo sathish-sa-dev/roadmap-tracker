@@ -20,8 +20,7 @@
     "lowlight": "^3.3.0",
     "highlight.js": "^11.11.1",
     "@tiptap/extension-placeholder": "^2.12.0",
-    "@google/genai": "latest",
-    "@": "latest"
+    "@google/genai": "latest"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

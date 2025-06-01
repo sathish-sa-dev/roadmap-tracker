@@ -35,7 +35,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
       setTimeLeft(currentWorkDuration);
       setIsWorkSession(true);
     }
-  }, [currentWorkDuration, timerState]);
+  }, [currentWorkDuration]);
 
 
   const resetTimer = useCallback(() => {
