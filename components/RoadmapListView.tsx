@@ -95,14 +95,24 @@ const RoadmapListView: React.FC<RoadmapListViewProps> = ({
       <div className="w-full max-w-3xl bg-white p-6 sm:p-8 rounded-xl shadow-2xl">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-700">Your Roadmaps</h1>
-          <button
-            onClick={onOpenCreateRoadmapModal}
-            className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-full transition-colors"
-            title="Add New Roadmap"
-            aria-label="Add New Roadmap"
-          >
-            <PlusCircleIcon className="w-8 h-8 sm:w-10 sm:h-10" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onOpenSettings}
+              className="p-2 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
+              title="Settings"
+              aria-label="Open Settings"
+            >
+              <CogIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+            </button>
+            <button
+              onClick={onOpenCreateRoadmapModal}
+              className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-full transition-colors"
+              title="Add New Roadmap"
+              aria-label="Add New Roadmap"
+            >
+              <PlusCircleIcon className="w-8 h-8 sm:w-10 sm:h-10" />
+            </button>
+          </div>
         </div>
         
         {/* Removed: Import Full Roadmap button */}

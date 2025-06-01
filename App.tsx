@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Task, TimeScale, TimeGroup, AppSettings, StorageLocation, Roadmap, AllRoadmapsData, CalculatedTaskStats } from './types.ts';
+import { Task, TimeScale, TimeGroup, AppSettings, StorageLocation, Roadmap, AllRoadmapsData } from './types.ts';
 import { LOCAL_STORAGE_KEY, APP_SETTINGS_KEY, DEFAULT_POMODORO_WORK_MINUTES, DEFAULT_POMODORO_BREAK_MINUTES } from './constants.ts';
 import useLocalStorage from './hooks/useLocalStorage.ts';
-import { groupTasks, filterTasksForGroup, formatDateToYYYYMMDD } from './services/dateUtils.ts';
+import { groupTasks, filterTasksForGroup } from './services/dateUtils.ts';
 import { verifyDirectoryPermission, loadAllRoadmapsDataFromHandle, saveAllRoadmapsDataToHandle } from './services/fileSystemAccess.ts';
 import { calculateRoadmapTaskStats } from './services/analyticsUtils.ts';
 
@@ -16,7 +16,6 @@ import SettingsModal from './components/SettingsModal.tsx';
 import RoadmapListView from './components/RoadmapListView.tsx'; 
 import CreateRoadmapModal from './components/CreateRoadmapModal.tsx';
 import RoadmapAnalyticsModal from './components/RoadmapAnalyticsModal.tsx';
-import CogIcon from './components/icons/CogIcon.tsx';
 import ChevronLeftIcon from './components/icons/ChevronLeftIcon.tsx';
 
 const App = (): JSX.Element => {
@@ -100,17 +99,29 @@ const App = (): JSX.Element => {
 
       if (appSettings.storageLocation === StorageLocation.FileSystem) {
         if (directoryHandle) {
-          if (await verifyDirectoryPermission(directoryHandle)) {
-            loadedData = await loadAllRoadmapsDataFromHandle(directoryHandle);
-          } else {
-            setGlobalError("Permission denied for the selected directory. Please re-select or grant permissions via Settings.");
-            setDirectoryHandle(null); 
-            let localFallbackString = localStorage.getItem(LOCAL_STORAGE_KEY);
-            let rawLocalFallback = null;
-            try {
-                rawLocalFallback = localFallbackString ? JSON.parse(localFallbackString) : null;
-            } catch (e) { console.error("Error parsing fallback LocalStorage data during FS failure", e); }
-            loadedData = migrateOldData(rawLocalFallback || defaultAllRoadmapsData);
+          try {
+            if (await verifyDirectoryPermission(directoryHandle)) {
+              loadedData = await loadAllRoadmapsDataFromHandle(directoryHandle);
+              if (!loadedData) {
+                // No file found, use default data and create the file
+                loadedData = defaultAllRoadmapsData;
+                await saveAllRoadmapsDataToHandle(directoryHandle, loadedData);
+              }
+            } else {
+              setGlobalError("Permission denied for the selected directory. Please re-select or grant permissions via Settings.");
+              setDirectoryHandle(null); 
+              // Fallback to localStorage data if available
+              const localFallbackString = localStorage.getItem(LOCAL_STORAGE_KEY);
+              let rawLocalFallback = null;
+              try {
+                  rawLocalFallback = localFallbackString ? JSON.parse(localFallbackString) : null;
+              } catch (e) { console.error("Error parsing fallback LocalStorage data during FS failure", e); }
+              loadedData = migrateOldData(rawLocalFallback || defaultAllRoadmapsData);
+            }
+          } catch (error) {
+            console.error("Error loading data from file system:", error);
+            setGlobalError(`Failed to load data from file system: ${error instanceof Error ? error.message : String(error)}`);
+            loadedData = defaultAllRoadmapsData;
           }
         } else { 
           if(appSettings.directoryName){ 
@@ -119,6 +130,7 @@ const App = (): JSX.Element => {
           loadedData = defaultAllRoadmapsData;
         }
       } else { 
+        // Local Storage mode
         const rawLocalDataString = localStorage.getItem(LOCAL_STORAGE_KEY);
         let rawLocalData = null;
         try {
@@ -130,6 +142,7 @@ const App = (): JSX.Element => {
         
         loadedData = migrateOldData(rawLocalData);
 
+        // Only update localStorage if data was migrated or if no data exists
         if (JSON.stringify(loadedData) !== JSON.stringify(rawLocalData) && rawLocalDataString && rawLocalData !== defaultAllRoadmapsData) { 
             setLocalStoredAllRoadmaps(loadedData);
         } else if (!rawLocalDataString) { 
@@ -138,6 +151,7 @@ const App = (): JSX.Element => {
       }
       
       setAllRoadmapsData(loadedData || defaultAllRoadmapsData);
+      // Reset active roadmap if it no longer exists
       if (activeRoadmapId && !(loadedData?.roadmaps.some(r => r.id === activeRoadmapId))) {
         setActiveRoadmapId(null); 
       }
@@ -149,15 +163,24 @@ const App = (): JSX.Element => {
   useEffect(() => {
     if (isLoadingData) return; 
 
-    if (appSettings.storageLocation === StorageLocation.FileSystem) {
-      if (directoryHandle) {
-        saveAllRoadmapsDataToHandle(directoryHandle, allRoadmapsData).catch(err => {
-          setGlobalError(`Failed to save data to file system: ${err instanceof Error ? err.message : String(err)}`);
-        });
+    const saveData = async () => {
+      try {
+        if (appSettings.storageLocation === StorageLocation.FileSystem) {
+          if (directoryHandle) {
+            const success = await saveAllRoadmapsDataToHandle(directoryHandle, allRoadmapsData);
+            if (!success) {
+              setGlobalError("Failed to save data to file system. Please check directory permissions.");
+            }
+          }
+        } else { 
+          setLocalStoredAllRoadmaps(allRoadmapsData);
+        }
+      } catch (err) {
+        setGlobalError(`Failed to save data: ${err instanceof Error ? err.message : String(err)}`);
       }
-    } else { 
-      setLocalStoredAllRoadmaps(allRoadmapsData);
-    }
+    };
+
+    saveData();
   }, [allRoadmapsData, appSettings.storageLocation, directoryHandle, setLocalStoredAllRoadmaps, isLoadingData]);
 
 
@@ -440,16 +463,26 @@ const App = (): JSX.Element => {
           onOpenCreateRoadmapModal={handleOpenCreateRoadmapModal} 
           onRenameRoadmap={handleRenameRoadmap}
           onDeleteRoadmap={handleDeleteRoadmap}
-          // Removed onImportFullRoadmap prop
           onViewRoadmapStats={handleViewRoadmapStats}
           setGlobalError={setGlobalError}
+          onOpenSettings={() => setIsSettingsModalOpen(true)}
         />
         <CreateRoadmapModal
           isOpen={isCreateRoadmapModalOpen}
           onClose={handleCloseCreateRoadmapModal}
           onCreateRoadmap={handleCreateRoadmap}
         />
-         {isAnalyticsModalOpen && selectedRoadmapForAnalytics && (
+         <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          currentSettings={appSettings}
+          onSaveSettings={handleSaveSettings}
+          setGlobalError={setGlobalError}
+          directoryHandle={directoryHandle}
+          setDirectoryHandle={setDirectoryHandle}
+          currentRoadmapDataForMigrationEstimate={allRoadmapsData.roadmaps.reduce((acc,r) => acc + r.tasks.length, 0)}
+        />
+        {isAnalyticsModalOpen && selectedRoadmapForAnalytics && (
           <RoadmapAnalyticsModal
             isOpen={isAnalyticsModalOpen}
             onClose={() => setIsAnalyticsModalOpen(false)}
