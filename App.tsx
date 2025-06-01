@@ -482,14 +482,6 @@ const App = (): JSX.Element => {
               workDuration={appSettings.pomodoroWorkMinutes * 60}
               breakDuration={appSettings.pomodoroBreakMinutes * 60}
             />
-            <button
-              onClick={() => setIsSettingsModalOpen(true)}
-              className="p-1.5 sm:p-2 rounded-full hover:bg-slate-700 transition-colors"
-              title="Settings"
-              aria-label="Open application settings"
-            >
-              <CogIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </button>
           </div>
         </header>
 

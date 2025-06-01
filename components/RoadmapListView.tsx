@@ -6,6 +6,7 @@ import PencilIcon from './icons/PencilIcon.tsx';
 import ChartBarIcon from './icons/ChartBarIcon.tsx';
 // Removed: import ImportDataModalComponent from './ImportDataModal.tsx';
 import { calculateRoadmapTaskStats } from '../services/analyticsUtils.ts';
+import CogIcon from './icons/CogIcon.tsx';
 
 interface RoadmapListViewProps {
   roadmaps: Roadmap[];
@@ -16,6 +17,7 @@ interface RoadmapListViewProps {
   // Removed: onImportFullRoadmap: (roadmapData: Roadmap) => void; 
   onViewRoadmapStats: (roadmapId: string) => void;
   setGlobalError: (message: string | null) => void;
+  onOpenSettings: () => void;
 }
 
 const ROADMAPS_PER_PAGE = 5;
@@ -29,6 +31,7 @@ const RoadmapListView: React.FC<RoadmapListViewProps> = ({
   // Removed: onImportFullRoadmap,
   onViewRoadmapStats,
   setGlobalError,
+  onOpenSettings,
 }) => {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingValue, setRenamingValue] = useState('');
