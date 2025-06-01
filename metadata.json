@@ -1,0 +1,14 @@
+{
+  "name": "Minimalist Roadmap Tracker",
+  "description": "A minimalist roadmap tracker application with task management, timeline views, a Pomodoro timer, rich text notes, and import/export functionality.",
+  "authors": [
+    {
+      "name": "AI Assistant"
+    },
+    {
+      "name": "User"
+    }
+  ],
+  "requestFramePermissions": [],
+  "prompt": ""
+}

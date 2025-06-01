@@ -1,0 +1,29 @@
+/* Global styles and Tiptap editor specific styles */
+
+body {
+    margin: 0; /* Basic reset, though Tailwind's preflight also handles this */
+    font-family: sans-serif; /* Default sans-serif, Tailwind will likely override with its defaults */
+  }
+  
+  #root {
+    /* If you need #root to take full height for flex layouts in App.tsx */
+    /* min-height: 100vh; 
+       display: flex;
+       flex-direction: column; */
+  }
+  
+  /* Basic styling for Tiptap editor focus and placeholder */
+  .ProseMirror:focus {
+    outline: none;
+  }
+  
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    height: 0;
+  }
+  
+  /* Add other global styles or component-specific styles here */
+  
